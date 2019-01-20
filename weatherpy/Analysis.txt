@@ -1,0 +1,8 @@
+Observed trend 1
+There is a correlation between latitude and temperature. In the data set analyzed in June, the highest temperatures are found between 20 and 40 degrees latitude, the same latitude range where Sahara, Guadalajara and Gobi deserts are located. The Northern Hemisphere has more data points, which is expected since the northern hemisphere also contains greater land-mass than the Southern hemisphere.
+
+Observed trend 2
+There appears to be no correlation between latitude and cloudiness, and only weak correlation between latitude and wind speed. There are higher wind speeds observed in the southern hemisphere.
+
+Observed trend 3
+The correlation between latitude and humidity is also not pronounced. The humidity is higher in the northern hemisphere, which is to be expected as it is Summer in the northern hemisphere.
