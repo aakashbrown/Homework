@@ -5,34 +5,22 @@ import datetime as dt
 import sqlalchemy
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
+from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy import create_engine, func
 from flask import Flask, jsonify
 
-
-#################################################
-# Database Setup
-#################################################
 engine = create_engine("sqlite:///Hawaii.sqlite")
-# reflect the database into a new model
 Base = automap_base()
-# reflect the tables
 Base.prepare(engine, reflect=True)
 
-# Save reference to the table
 Station = Base.classes.station
-Measurements = Base.classes.measurements
+Measurement = Base.classes.measurement
 
-# Create our session (link) from Python to the DB
-session = Session(engine)
+session_vacation = sessionmaker(bind=engine)
+session = scoped_session(session_vacation)
 
-#################################################
-# Flask Setup
-#################################################
 app = Flask(__name__)
 
-#################################################
-# Flask Routes
-#################################################
 @app.route("/")
 def welcome():
     """List all available api routes."""
@@ -55,16 +43,15 @@ def welcome():
         f"- When given the start and the end date (YYYY-MM-DD), calculate the MIN/AVG/MAX temperature for dates between the start and end date inclusive<br/>"
 
     )
-#########################################################################################
 
 @app.route("/api/v1.0/precipitation")
 def precipitation():
 
-    last_date = session.query(Measurements.date).order_by(Measurements.date.desc()).first()
+    last_date = session.query(Measurement.date).order_by(Measurement.date.desc()).first()
     last_year = dt.date(2017, 8, 23) - dt.timedelta(days=365)
-    rain = session.query(Measurements.date, Measurements.prcp).\
-        filter(Measurements.date > last_year).\
-        order_by(Measurements.date).all()
+    rain = session.query(Measurement.date, Measurement.prcp).\
+        filter(Measurement.date > last_year).\
+        order_by(Measurement.date).all()
 
     rain_totals = []
     for result in rain:
@@ -85,11 +72,11 @@ def stations():
 def tobs():
     """Return a list of temperatures for prior year"""
 
-    last_date = session.query(Measurements.date).order_by(Measurements.date.desc()).first()
+    last_date = session.query(Measurement.date).order_by(Measurement.date.desc()).first()
     last_year = dt.date(2017, 8, 23) - dt.timedelta(days=365)
-    temperature = session.query(Measurements.date, Measurements.tobs).\
-        filter(Measurements.date > last_year).\
-        order_by(Measurements.date).all()
+    temperature = session.query(Measurement.date, Measurement.tobs).\
+        filter(Measurement.date > last_year).\
+        order_by(Measurement.date).all()
 
     temperature_totals = []
     for result in temperature:
@@ -107,8 +94,8 @@ def trip1(start):
     last_year = dt.timedelta(days=365)
     start = start_date-last_year
     end =  dt.date(2017, 8, 23)
-    trip_data = session.query(func.min(Measurements.tobs), func.avg(Measurements.tobs), func.max(Measurements.tobs)).\
-        filter(Measurements.date >= start).filter(Measurements.date <= end).all()
+    trip_data = session.query(func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).\
+        filter(Measurement.date >= start).filter(Measurement.date <= end).all()
     trip = list(np.ravel(trip_data))
     return jsonify(trip)
 
@@ -121,8 +108,8 @@ def trip2(start,end):
     last_year = dt.timedelta(days=365)
     start = start_date-last_year
     end = end_date-last_year
-    trip_data = session.query(func.min(Measurements.tobs), func.avg(Measurements.tobs), func.max(Measurements.tobs)).\
-        filter(Measurements.date >= start).filter(Measurements.date <= end).all()
+    trip_data = session.query(func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).\
+        filter(Measurement.date >= start).filter(Measurement.date <= end).all()
     trip = list(np.ravel(trip_data))
     return jsonify(trip)
 
